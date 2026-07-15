@@ -256,9 +256,8 @@ watch(
     if (!selectedId) return
 
     const place = places.value.find((item) => item.contentId === selectedId)
-    if (place) {
-      openPlace(place)
-    }
+    // 홈 추천에서 바로 진입할 때 목록 로딩 전이어도 상세 API를 호출합니다.
+    openPlace(place || { contentId: String(selectedId) })
   },
   { immediate: true }
 )

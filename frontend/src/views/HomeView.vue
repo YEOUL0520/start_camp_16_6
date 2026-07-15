@@ -1,11 +1,9 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 
-import ChatButton from '../components/ChatButton.vue'
 import CommunityPanel from '../components/CommunityPanel.vue'
 import FestivalPanel from '../components/FestivalPanel.vue'
 import PlaceCard from '../components/PlaceCard.vue'
-import SiteFooter from '../components/SiteFooter.vue'
 import TravelTestModal from '../components/TravelTestModal.vue'
 import TypeCard from '../components/TypeCard.vue'
 import { fetchFestivals, fetchPosts, submitTravelTest } from '../api'
@@ -14,6 +12,7 @@ import healingIcon from '../assets/healing.png'
 import explorerIcon from '../assets/explorer.png'
 import cultureIcon from '../assets/culture.png'
 import foodieIcon from '../assets/foodie.png'
+import searchIcon from '../assets/search.png'
 
 const RESULT_KEY = 'localhub-travel-type'
 const ONBOARDING_KEY = 'localhub-onboarding-seen'
@@ -31,11 +30,17 @@ const heroImages = [
   { alt: '검성지 생태공원', src: 'https://tong.visitkorea.or.kr/cms/resource/08/3032808_image2_1.jpg' }
 ]
 
+function shortTravelDescription(description) {
+  const text = String(description || '')
+  const end = text.indexOf('여행자예요.')
+  return end >= 0 ? text.slice(0, end + '여행자예요.'.length) : text
+}
+
 const travelTypes = [
-  { code: 'HEALING', name: travelTypeMeta.HEALING.name, description: travelTypeMeta.HEALING.description, keywords: travelTypeMeta.HEALING.keywords, iconSrc: healingIcon, tone: 'green' },
-  { code: 'EXPLORER', name: travelTypeMeta.EXPLORER.name, description: travelTypeMeta.EXPLORER.description, keywords: travelTypeMeta.EXPLORER.keywords, iconSrc: explorerIcon, tone: 'blue' },
-  { code: 'CULTURE', name: travelTypeMeta.CULTURE.name, description: travelTypeMeta.CULTURE.description, keywords: travelTypeMeta.CULTURE.keywords, iconSrc: cultureIcon, tone: 'purple' },
-  { code: 'FOODIE', name: travelTypeMeta.FOODIE.name, description: travelTypeMeta.FOODIE.description, keywords: travelTypeMeta.FOODIE.keywords, iconSrc: foodieIcon, tone: 'orange' }
+  { code: 'HEALING', name: travelTypeMeta.HEALING.name, description: shortTravelDescription(travelTypeMeta.HEALING.description), keywords: travelTypeMeta.HEALING.keywords, iconSrc: healingIcon, tone: 'green' },
+  { code: 'EXPLORER', name: travelTypeMeta.EXPLORER.name, description: shortTravelDescription(travelTypeMeta.EXPLORER.description), keywords: travelTypeMeta.EXPLORER.keywords, iconSrc: explorerIcon, tone: 'blue' },
+  { code: 'CULTURE', name: travelTypeMeta.CULTURE.name, description: shortTravelDescription(travelTypeMeta.CULTURE.description), keywords: travelTypeMeta.CULTURE.keywords, iconSrc: cultureIcon, tone: 'purple' },
+  { code: 'FOODIE', name: travelTypeMeta.FOODIE.name, description: shortTravelDescription(travelTypeMeta.FOODIE.description), keywords: travelTypeMeta.FOODIE.keywords, iconSrc: foodieIcon, tone: 'orange' }
 ]
 
 const resultType = computed(() => travelTypes.find((type) => type.code === resultCode.value) || travelTypes[0])
@@ -119,16 +124,42 @@ async function loadPlaces() {
 async function loadHomePanelData() {
   try {
     const festivalsResult = await fetchFestivals({ size: 4 })
-    festivals.value = Array.isArray(festivalsResult) ? festivalsResult : festivalsResult.items || []
+    const festivalItems = Array.isArray(festivalsResult) ? festivalsResult : festivalsResult.items || []
+    festivals.value = festivalItems.slice(0, 2).map(normalizeHomeFestival)
   } catch {
     festivals.value = []
   }
 
   try {
     const postsResult = await fetchPosts({ size: 4 })
-    posts.value = Array.isArray(postsResult) ? postsResult : postsResult.items || []
+    const postItems = Array.isArray(postsResult) ? postsResult : postsResult.items || []
+    posts.value = postItems.slice(0, 2)
   } catch {
     posts.value = []
+  }
+}
+
+function formatFestivalDate(value) {
+  if (!value) return ''
+  return String(value).replace(/-/g, '.')
+}
+
+function normalizeHomeFestival(festival) {
+  const item = festival || {}
+  const startDate = item.startDate || item.start_date || item.eventStartDate || ''
+  const endDate = item.endDate || item.end_date || item.eventEndDate || ''
+  const schedule = startDate
+    ? endDate && endDate !== startDate
+      ? `${formatFestivalDate(startDate)} ~ ${formatFestivalDate(endDate)}`
+      : formatFestivalDate(startDate)
+    : '일정 확인 중'
+
+  return {
+    id: item.contentId || item.content_id || item.id || item.title,
+    title: item.title || '축제',
+    description: item.description || item.overview || `${item.region || '구미·경북'}에서 열리는 지역 축제입니다.`,
+    schedule,
+    location: [item.address || item.addr, item.detailAddress || item.detail_address].filter(Boolean).join(' ') || item.region || '장소 확인 중'
   }
 }
 
@@ -201,10 +232,11 @@ function normalizeHomePlace(place) {
           <header class="section-header">
             <div>
               <h2 v-if="hasResult">
+                <img :src="searchIcon" alt="" aria-hidden="true" />
                 <em>'{{ resultType.name }}'</em>인 당신을 위한 지역 추천
               </h2>
-              <h2 v-else>당신을 위한 지역 추천</h2>
-              <p v-if="hasResult">{{ resultKeywords }} 키워드를 바탕으로 골랐어요</p>
+              <h2 v-else><img :src="searchIcon" alt="" aria-hidden="true" />당신을 위한 지역 추천</h2>
+              <p v-if="hasResult"> {{ resultKeywords }} 키워드를 바탕으로 골랐어요</p>
               <p v-else>취향 테스트를 완료하면 더 잘 맞는 여행지를 보여드려요</p>
             </div>
             <router-link to="/places">더보기 <span>›</span></router-link>
@@ -223,8 +255,6 @@ function normalizeHomePlace(place) {
       </section>
     </main>
 
-    <SiteFooter />
-    <ChatButton />
     <TravelTestModal
       v-if="showTravelTest"
       @complete="completeTravelTest"
@@ -261,12 +291,12 @@ function normalizeHomePlace(place) {
 .dashboard { display: grid; grid-template-columns: 1.55fr .65fr .68fr; gap: 14px; padding-bottom: 30px; }
 .recommendations { min-width: 0; }
 .section-header { min-height: 60px; display: flex; align-items: center; justify-content: space-between; gap: 18px; }
-.section-header h2 { margin: 0; font-size: 22px; letter-spacing: -.6px; }
-.section-header h2::before { content: '●'; margin-right: 10px; color: var(--green-800); font-size: 17px; }
+.section-header h2 { display: flex; align-items: center; gap: 9px; margin: 0; font-size: 22px; letter-spacing: -.6px; }
+.section-header h2 img { width: 22px; height: 22px; flex: 0 0 22px; object-fit: contain; filter: invert(31%) sepia(25%) saturate(1153%) hue-rotate(98deg) brightness(88%); }
 .section-header h2 em { color: var(--green-900); font-style: normal; }
-.section-header p { margin: 5px 0 0 27px; color: #6d7470; font-size: 12px; }
+.section-header p { margin: 7px 0 0 31px; color: #6d7470; font-size: 12px; }
 .section-header a { color: #5d6661; font-size: 12px; white-space: nowrap; }
-.place-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 13px; }
+.place-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 13px; padding-top: 18px; }
 @media (max-width: 1180px) {
   .hero { grid-template-columns: .9fr 1.1fr; gap: 25px; }
   .result-badge { left: 24%; }

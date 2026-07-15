@@ -1,9 +1,10 @@
 <template>
   <div id="app">
     <Header />
-    <main :class="{ 'app-main': route.path !== '/' }">
+    <main class="app-content" :class="{ 'app-main': route.path !== '/' }">
       <router-view />
     </main>
+    <SiteFooter />
     <ChatButton />
   </div>
 </template>
@@ -12,6 +13,7 @@
 import { useRoute } from 'vue-router'
 import ChatButton from './components/ChatButton.vue'
 import Header from './components/Header.vue'
+import SiteFooter from './components/SiteFooter.vue'
 
 const route = useRoute()
 </script>
@@ -19,7 +21,10 @@ const route = useRoute()
 <style>
 #app {
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
+.app-content { flex: 1; }
 .app-main {
   width: min(1180px, calc(100% - 48px));
   margin: 0 auto;
