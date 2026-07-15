@@ -9,6 +9,8 @@
     "serve": "vite preview"
   },
   "dependencies": {
+    "@fullcalendar/daygrid": "^6.1.21",
+    "@fullcalendar/vue3": "^6.1.21",
     "axios": "^1.6.0",
     "vue": "^3.4.0",
     "vue-router": "^4.3.0"
