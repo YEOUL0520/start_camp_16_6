@@ -1,11 +1,13 @@
 <script setup>
+import calendarIcon from '../assets/calendar.png'
+
 defineProps({ festivals: { type: Array, required: true } })
 </script>
 
 <template>
   <section class="info-panel" aria-labelledby="festival-title">
     <header class="panel-header">
-      <h2 id="festival-title"><span aria-hidden="true">▣</span> 다가오는 축제</h2>
+      <h2 id="festival-title"><img :src="calendarIcon" alt="" aria-hidden="true" />다가오는 축제</h2>
       <router-link to="/festivals">전체 일정 보기 <span aria-hidden="true">›</span></router-link>
     </header>
     <div class="festival-list">
@@ -25,8 +27,8 @@ defineProps({ festivals: { type: Array, required: true } })
 <style scoped>
 .info-panel { height: 100%; padding: 20px 18px; background: rgba(255,255,255,.76); border: 1px solid var(--line); border-radius: 14px; }
 .panel-header { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 14px; }
-.panel-header h2 { margin: 0; font-size: 20px; letter-spacing: -.4px; }
-.panel-header h2 span { color: var(--green-900); }
+.panel-header h2 { display: flex; align-items: center; gap: 12px; margin: 0; padding-left: 4px; font-size: 20px; letter-spacing: -.4px; }
+.panel-header h2 img { width: 22px; height: 22px; object-fit: contain; filter: invert(31%) sepia(25%) saturate(1153%) hue-rotate(98deg) brightness(88%); }
 .panel-header a { color: #606865; font-size: 12px; white-space: nowrap; }
 .festival-list { display: grid; gap: 11px; }
 .festival-card { min-height: 122px; display: grid; grid-template-columns: 70px 1fr; gap: 14px; padding: 11px; border: 1px solid var(--line); border-radius: 11px; background: #fff; }
