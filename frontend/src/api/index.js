@@ -36,6 +36,11 @@ export function submitTravelTest(payload) {
   return api.post('/travel-test', payload).then(res => res.data.data)
 }
 
+export function sendChat(payload) {
+  // payload: { message: string, history?: [{ role: 'user'|'assistant', content: string }] }
+  return api.post('/chat', payload).then(res => res.data.data)
+}
+
 export function fetchPosts(params = {}) {
   return api.get('/posts', { params }).then(res => res.data.data)
 }
