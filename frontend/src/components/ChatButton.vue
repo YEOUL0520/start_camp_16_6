@@ -128,7 +128,6 @@ async function submitMessage() {
   >
     <span class="spark" aria-hidden="true">✦</span>
     <span class="chat-icon" aria-hidden="true">•••</span>
-    <span class="chat-label">LocalHub AI</span>
   </button>
 </template>
 
@@ -136,7 +135,6 @@ async function submitMessage() {
 .chat-button { position: fixed; z-index: 110; right: 30px; bottom: 28px; width: 70px; height: 70px; display: grid; place-items: center; color: #fff; background: var(--green-900); border: 5px solid rgba(255,255,255,.86); border-radius: 50%; box-shadow: 0 12px 26px rgba(7,92,58,.24); cursor: pointer; }
 .chat-icon { width: 33px; height: 27px; display: grid; place-items: center; border: 2px solid #fff; border-radius: 50%; font-weight: 900; letter-spacing: 2px; line-height: 1; }
 .spark { position: absolute; top: 6px; right: 7px; color: #bfe7cd; font-size: 13px; }
-.chat-label { position: absolute; top: calc(100% + 5px); right: -3px; padding: 5px 10px; color: #28312d; background: #fff; border-radius: 999px; box-shadow: 0 5px 14px rgba(0,0,0,.1); font-size: 11px; white-space: nowrap; }
 .chat-panel { position: fixed; z-index: 109; right: 30px; bottom: 112px; width: min(390px, calc(100vw - 32px)); height: min(570px, calc(100vh - 150px)); display: grid; grid-template-rows: auto 1fr auto; overflow: hidden; background: #fff; border: 1px solid #dfe9e2; border-radius: 22px; box-shadow: 0 24px 70px rgba(21, 54, 38, .24); }
 .chat-header { display: flex; align-items: center; justify-content: space-between; padding: 18px 20px; color: #fff; background: var(--green-900); }
 .chat-header div { display: grid; gap: 2px; }
