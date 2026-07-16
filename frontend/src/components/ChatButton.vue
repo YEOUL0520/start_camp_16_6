@@ -3,6 +3,8 @@ import { nextTick, ref } from 'vue'
 
 import { sendChat } from '../api'
 
+const TRAVEL_TYPE_KEY = 'localhub-travel-type'
+
 const isOpen = ref(false)
 const input = ref('')
 const isSending = ref(false)
@@ -26,8 +28,15 @@ function scrollToBottom() {
 }
 
 function referenceLink(reference) {
+  if (reference.type === 'map') {
+    return { path: '/map', query: { selected: reference.id } }
+  }
   if (reference.type === 'place') {
     return { path: '/places', query: { selected: reference.id } }
+  }
+  if (reference.type === 'festival_calendar') {
+    const [year, month] = String(reference.id).split('-')
+    return { path: '/festivals', query: { year, month } }
   }
   if (reference.type === 'festival') {
     return { path: '/festivals', query: { selected: reference.id } }
@@ -51,7 +60,8 @@ async function submitMessage() {
   scrollToBottom()
 
   try {
-    const data = await sendChat(content, history)
+    const travelType = sessionStorage.getItem(TRAVEL_TYPE_KEY) || localStorage.getItem(TRAVEL_TYPE_KEY) || null
+    const data = await sendChat(content, history, travelType)
     messages.value.push({
       role: 'assistant',
       content: data.answer,
@@ -97,7 +107,7 @@ async function submitMessage() {
             :to="referenceLink(reference)"
             @click="isOpen = false"
           >
-            {{ reference.title }} →
+            {{ reference.title }}{{ reference.type === 'map' ? ' 지도에서 보기' : reference.type === 'festival_calendar' ? ' 열기' : '' }} →
           </router-link>
         </nav>
       </article>
@@ -132,10 +142,10 @@ async function submitMessage() {
 </template>
 
 <style scoped>
-.chat-button { position: fixed; z-index: 110; right: 30px; bottom: 28px; width: 70px; height: 70px; display: grid; place-items: center; color: #fff; background: var(--green-900); border: 5px solid rgba(255,255,255,.86); border-radius: 50%; box-shadow: 0 12px 26px rgba(7,92,58,.24); cursor: pointer; }
+.chat-button { position: fixed; z-index: 999; right: 30px; bottom: 28px; width: 70px; height: 70px; display: grid; place-items: center; color: #fff; background: var(--green-900); border: 5px solid rgba(255,255,255,.86); border-radius: 50%; box-shadow: 0 12px 26px rgba(7,92,58,.24); cursor: pointer; }
 .chat-icon { width: 33px; height: 27px; display: grid; place-items: center; border: 2px solid #fff; border-radius: 50%; font-weight: 900; letter-spacing: 2px; line-height: 1; }
 .spark { position: absolute; top: 6px; right: 7px; color: #bfe7cd; font-size: 13px; }
-.chat-panel { position: fixed; z-index: 109; right: 30px; bottom: 112px; width: min(390px, calc(100vw - 32px)); height: min(570px, calc(100vh - 150px)); display: grid; grid-template-rows: auto 1fr auto; overflow: hidden; background: #fff; border: 1px solid #dfe9e2; border-radius: 22px; box-shadow: 0 24px 70px rgba(21, 54, 38, .24); }
+.chat-panel { position: fixed; z-index: 998; right: 30px; bottom: 112px; width: min(390px, calc(100vw - 32px)); height: min(570px, calc(100vh - 150px)); display: grid; grid-template-rows: auto 1fr auto; overflow: hidden; background: #fff; border: 1px solid #dfe9e2; border-radius: 22px; box-shadow: 0 24px 70px rgba(21, 54, 38, .24); }
 .chat-header { display: flex; align-items: center; justify-content: space-between; padding: 18px 20px; color: #fff; background: var(--green-900); }
 .chat-header div { display: grid; gap: 2px; }
 .chat-header strong { font-size: 17px; }

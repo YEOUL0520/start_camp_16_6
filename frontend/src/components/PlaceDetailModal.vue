@@ -12,7 +12,7 @@
         <div class="detail-body">
           <span class="place-chip">{{ place.region || place.contentType }}</span>
           <h2 id="place-detail-title">{{ place.title }}</h2>
-          
+
           <dl class="detail-grid">
             <div><dt>유형</dt><dd>{{ place.contentType || '관광지' }}</dd></div>
             <div><dt>주소</dt><dd>{{ [place.address, place.detailAddress].filter(Boolean).join(' ') || '주소 정보 미등록' }}</dd></div>
@@ -43,6 +43,14 @@ import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 
+const PLACE_MARKER_ICON = L.divIcon({
+  className: 'localhub-place-marker',
+  html: '<span aria-hidden="true"></span>',
+  iconSize: [30, 38],
+  iconAnchor: [15, 38],
+  popupAnchor: [0, -34]
+})
+
 const props = defineProps({
   show: { type: Boolean, default: false },
   place: { type: Object, default: null }
@@ -56,8 +64,8 @@ let marker = null
 
 // 유효한 좌표가 있는지 확인하는 computed 속성
 const hasCoordinates = computed(() => {
-  return props.place && 
-         Number.isFinite(props.place.latitude) && 
+  return props.place &&
+         Number.isFinite(props.place.latitude) &&
          Number.isFinite(props.place.longitude)
 })
 
@@ -83,13 +91,13 @@ function initMap() {
   } else {
     // 줌 컨트롤을 제외하여 모달 안에서 깔끔하게 보이도록 설정
     map = L.map(mapElement.value, { zoomControl: false }).setView(position, 14)
-    
+
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
       attribution: '&copy; OpenStreetMap'
     }).addTo(map)
 
-    marker = L.marker(position).addTo(map)
+    marker = L.marker(position, { icon: PLACE_MARKER_ICON }).addTo(map)
   }
 
   // 모달 애니메이션 및 렌더링 이후 지도 크기를 재계산하여 회색 타일 오류 방지
@@ -154,13 +162,13 @@ onBeforeUnmount(() => {
   right: 16px;
   width: 36px;
   height: 36px;
-  
+
   /* Flexbox를 사용하여 '×'를 정중앙에 정렬 */
   display: flex;
   align-items: center;
   justify-content: center;
   padding-bottom: 2px; /* 폰트에 따라 세로 위치가 미세하게 쏠려 보일 경우 패딩으로 미세 조정 (필요에 따라 조절 또는 제거) */
-  
+
   border: none;
   border-radius: 999px;
   background: rgba(255,255,255,.92);
@@ -221,7 +229,31 @@ onBeforeUnmount(() => {
   border: 1px solid #edf0ed;
   z-index: 1; /* 모달 닫기 버튼을 덮지 않도록 제어 */
 }
-
+:deep(.localhub-place-marker) {
+  border: 0;
+  background: transparent;
+}
+:deep(.localhub-place-marker span) {
+  position: relative;
+  display: block;
+  width: 30px;
+  height: 30px;
+  border: 3px solid #fff;
+  border-radius: 50% 50% 50% 0;
+  background: var(--green-800);
+  box-shadow: 0 5px 14px rgba(16, 67, 45, .35);
+  transform: rotate(-45deg);
+}
+:deep(.localhub-place-marker span::after) {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #fff;
+  content: '';
+}
 @media (max-width: 430px) {
   .overlay { padding: 12px; }
   .detail-image { height: 190px; }
